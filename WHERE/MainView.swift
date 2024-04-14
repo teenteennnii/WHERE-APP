@@ -14,7 +14,7 @@ struct MainView: View {
                 .tabItem {
                     Label("Map", systemImage: "map")
                 }
-            NavigationView()
+            NavigateView()
                 .tabItem {
                     Label("Navigation", systemImage: "location")
                 }
