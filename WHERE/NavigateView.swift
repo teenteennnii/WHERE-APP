@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct NavigationView: View {
+struct NavigateView: View {
     var body: some View {
         VStack {
             Image(systemName: "location")
@@ -20,5 +20,5 @@ struct NavigationView: View {
 }
 
 #Preview {
-    NavigationView()
+    NavigateView()
 }
