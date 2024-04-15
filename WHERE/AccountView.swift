@@ -6,25 +6,6 @@
 //
 
 import SwiftUI
-import Firebase
-import FirebaseStorage
-
-class FirebaseManager: NSObject {
-    
-    let auth: Auth
-    let storage: Storage
-    
-    static let shared = FirebaseManager()
-    
-    override init() {
-        FirebaseApp.configure()
-        
-        self.auth = Auth.auth()
-        self.storage = Storage.storage()
-        
-        super.init()
-    }
-}
 
 struct AccountView: View {
     
@@ -152,7 +133,7 @@ struct AccountView: View {
     }
     
     private func persitImageToStorage() {
-        let filename = UUID().uuidString
+        _ = UUID().uuidString
         guard let uid = FirebaseManager.shared.auth.currentUser?.uid
             else { return }
         let ref = FirebaseManager.shared.storage.reference(withPath: uid)
@@ -184,7 +165,7 @@ struct AccountView: View {
             return
         }
         let userData = ["email": self.email, "uid": uid, "profileImageUrl": imageProfileUrl.absoluteString]
-        Firestore.firestore().collection("users")
+        FirebaseManager.shared.firestore.collection("users")
             .document(uid).setData(userData) {
                 err in
                 if let err = err {
