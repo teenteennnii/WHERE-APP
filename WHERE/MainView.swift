@@ -18,9 +18,9 @@ struct MainView: View {
                 .tabItem {
                     Label("Navigation", systemImage: "location")
                 }
-            FriendView()
+            MainMessagesView()
                 .tabItem {
-                    Label("Friend", systemImage: "person.2")
+                    Label("Messages", systemImage: "person.2")
                 }
             AccountView()
                 .tabItem {
