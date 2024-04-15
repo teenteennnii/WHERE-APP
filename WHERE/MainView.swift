@@ -32,4 +32,5 @@ struct MainView: View {
 
 #Preview {
     MainView()
+//        .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
 }
