@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FriendView: View {
+struct MainMessagesView: View {
     var body: some View {
         VStack {
             Image(systemName: "person.2")
@@ -20,5 +20,5 @@ struct FriendView: View {
 }
 
 #Preview {
-    FriendView()
+    MainMessagesView()
 }
