@@ -22,7 +22,7 @@ struct MainView: View {
                 .tabItem {
                     Label("Friend", systemImage: "person.2")
                 }
-            ProfileView()
+            AccountView()
                 .tabItem {
                     Label("Profile", systemImage: "person")
                 }
