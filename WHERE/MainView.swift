@@ -11,6 +11,10 @@ struct MainView: View {
     @ObservedObject private var vm = MainMessagesViewModel()
     var body: some View {
         TabView{
+            MainMessagesView()
+                .tabItem {
+                    Label("Messages", systemImage: "person.2")
+                }
             MapView()
                 .tabItem {
                     Label("Map", systemImage: "map")
@@ -19,21 +23,11 @@ struct MainView: View {
                 .tabItem {
                     Label("Navigation", systemImage: "location")
                 }
-            MainMessagesView()
-                .tabItem {
-                    Label("Messages", systemImage: "person.2")
-                }
 //            AccountView()
 //                .tabItem {
 //                    Label("Profile", systemImage: "person")
 //                }
         }
-        .fullScreenCover(isPresented: $vm.isUserCurrentlyLoggedOut, onDismiss: nil, content: {
-            AccountView(didCompleteLoginProcess: {
-                self.vm.isUserCurrentlyLoggedOut = false
-                self.vm.fetchCurrentUser()
-            })
-        })
     }
 }
 
