@@ -9,11 +9,13 @@ import SwiftUI
 
 struct AccountView: View {
     
-    @State var isLoginMode = false
-    @State var email = ""
-    @State var password = ""
+    let didCompleteLoginProcess: () -> ()
     
-    @State var shouldShowImagePicker = false
+    @State private var isLoginMode = false
+    @State private var email = ""
+    @State private var password = ""
+    
+    @State private var shouldShowImagePicker = false
     
     var body: some View {
         NavigationView {
@@ -111,12 +113,20 @@ struct AccountView: View {
             
             print("Successfully logged in as user: \(result?.user.uid ?? "")")
             self.loginStatusMessage = "Successfully logged in as user: \(result?.user.uid ?? "")"
+            
+            self.didCompleteLoginProcess()
         }
     }
     
     @State var loginStatusMessage = ""
     
     private func createNewAccount() {
+        
+        if self.image == nil {
+            self.loginStatusMessage = "You must select an profile image"
+            return
+        }
+        
         FirebaseManager.shared.auth.createUser(withEmail: email, password: password) {
             result, err in
             if let err = err {
@@ -173,11 +183,13 @@ struct AccountView: View {
                     self.loginStatusMessage = "\(err)"
                     return
                 }
+                
+                self.didCompleteLoginProcess()
             }
     }
 }
 
 #Preview {
-    AccountView()
+    AccountView(didCompleteLoginProcess: {})
 //        .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
 }
