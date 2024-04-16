@@ -43,6 +43,7 @@
 		431577792BCCD000007D4344 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 431577782BCCD000007D4344 /* FirebaseStorageCombine-Community */; };
 		4315777B2BCD0A95007D4344 /* FirebaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4315777A2BCD0A95007D4344 /* FirebaseManager.swift */; };
 		4315777E2BCD12F1007D4344 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4315777D2BCD12F1007D4344 /* SDWebImageSwiftUI */; };
+		431577802BCE0513007D4344 /* ChatUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4315777F2BCE0513007D4344 /* ChatUser.swift */; };
 		43502C262BA864FC00D626AF /* WHEREApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43502C252BA864FC00D626AF /* WHEREApp.swift */; };
 		43502C282BA864FC00D626AF /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43502C272BA864FC00D626AF /* MainView.swift */; };
 		43502C2A2BA864FD00D626AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43502C292BA864FD00D626AF /* Assets.xcassets */; };
@@ -73,6 +74,7 @@
 		4315773F2BCC1A09007D4344 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		431577412BCCC9BB007D4344 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		4315777A2BCD0A95007D4344 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseManager.swift; sourceTree = "<group>"; };
+		4315777F2BCE0513007D4344 /* ChatUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatUser.swift; sourceTree = "<group>"; };
 		43502C222BA864FC00D626AF /* WHERE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WHERE.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43502C252BA864FC00D626AF /* WHEREApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WHEREApp.swift; sourceTree = "<group>"; };
 		43502C272BA864FC00D626AF /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 				431577292BCB8A25007D4344 /* MapView.swift */,
 				4315772B2BCB8A6B007D4344 /* NavigateView.swift */,
 				4315772D2BCB8BB8007D4344 /* MainMessagesView.swift */,
+				4315777F2BCE0513007D4344 /* ChatUser.swift */,
 				4315772F2BCB8BD0007D4344 /* AccountView.swift */,
 				431577412BCCC9BB007D4344 /* ImagePicker.swift */,
 				4315773F2BCC1A09007D4344 /* GoogleService-Info.plist */,
@@ -324,6 +327,7 @@
 				43502C282BA864FC00D626AF /* MainView.swift in Sources */,
 				4315772A2BCB8A26007D4344 /* MapView.swift in Sources */,
 				4315772C2BCB8A6B007D4344 /* NavigateView.swift in Sources */,
+				431577802BCE0513007D4344 /* ChatUser.swift in Sources */,
 				431577422BCCC9BB007D4344 /* ImagePicker.swift in Sources */,
 				4315777B2BCD0A95007D4344 /* FirebaseManager.swift in Sources */,
 				4315772E2BCB8BB8007D4344 /* MainMessagesView.swift in Sources */,
