@@ -44,6 +44,7 @@
 		4315777B2BCD0A95007D4344 /* FirebaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4315777A2BCD0A95007D4344 /* FirebaseManager.swift */; };
 		4315777E2BCD12F1007D4344 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4315777D2BCD12F1007D4344 /* SDWebImageSwiftUI */; };
 		431577802BCE0513007D4344 /* ChatUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4315777F2BCE0513007D4344 /* ChatUser.swift */; };
+		431577822BCE079B007D4344 /* NewMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 431577812BCE079B007D4344 /* NewMessageView.swift */; };
 		43502C262BA864FC00D626AF /* WHEREApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43502C252BA864FC00D626AF /* WHEREApp.swift */; };
 		43502C282BA864FC00D626AF /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43502C272BA864FC00D626AF /* MainView.swift */; };
 		43502C2A2BA864FD00D626AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43502C292BA864FD00D626AF /* Assets.xcassets */; };
@@ -75,6 +76,7 @@
 		431577412BCCC9BB007D4344 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		4315777A2BCD0A95007D4344 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseManager.swift; sourceTree = "<group>"; };
 		4315777F2BCE0513007D4344 /* ChatUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatUser.swift; sourceTree = "<group>"; };
+		431577812BCE079B007D4344 /* NewMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMessageView.swift; sourceTree = "<group>"; };
 		43502C222BA864FC00D626AF /* WHERE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WHERE.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43502C252BA864FC00D626AF /* WHEREApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WHEREApp.swift; sourceTree = "<group>"; };
 		43502C272BA864FC00D626AF /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				43502C272BA864FC00D626AF /* MainView.swift */,
 				431577292BCB8A25007D4344 /* MapView.swift */,
 				4315772B2BCB8A6B007D4344 /* NavigateView.swift */,
+				431577812BCE079B007D4344 /* NewMessageView.swift */,
 				4315772D2BCB8BB8007D4344 /* MainMessagesView.swift */,
 				4315777F2BCE0513007D4344 /* ChatUser.swift */,
 				4315772F2BCB8BD0007D4344 /* AccountView.swift */,
@@ -333,6 +336,7 @@
 				4315772E2BCB8BB8007D4344 /* MainMessagesView.swift in Sources */,
 				431577302BCB8BD0007D4344 /* AccountView.swift in Sources */,
 				43502C262BA864FC00D626AF /* WHEREApp.swift in Sources */,
+				431577822BCE079B007D4344 /* NewMessageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
