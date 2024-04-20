@@ -9,12 +9,15 @@ import SwiftUI
 import Firebase
 
 struct FirebaseConstants {
+    static let uid = "uid"
     static let fromId = "fromId"
     static let toId = "toId"
     static let text = "text"
     static let timestamp = "timestamp"
     static let profileImageUrl = "profileImageUrl"
     static let email = "email"
+    static let messages = "messages"
+    static let recentMessages = "recent_messages"
 }
 
 struct ChatMessage: Identifiable {
@@ -38,7 +41,7 @@ class ChatLogViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var chatMessages = [ChatMessage]()
     
-    let chatUser: ChatUser?
+    var chatUser: ChatUser?
     
     init(chatUser: ChatUser?) {
         self.chatUser = chatUser
@@ -46,12 +49,15 @@ class ChatLogViewModel: ObservableObject {
         fetchMessages()
     }
     
-    private func fetchMessages() {
+    var firestoreListener: ListenerRegistration?
+    
+    func fetchMessages() {
         guard let fromId = FirebaseManager.shared.auth.currentUser?.uid else { return }
         
         guard let toId = chatUser?.uid else { return }
-        
-        FirebaseManager.shared.firestore
+        firestoreListener?.remove()
+        chatMessages.removeAll()
+         firestoreListener = FirebaseManager.shared.firestore
             .collection("messages")
             .document(fromId)
             .collection(toId)
@@ -67,6 +73,7 @@ class ChatLogViewModel: ObservableObject {
                     if change.type == .added {
                         let data = change.document.data()
                         self.chatMessages.append(.init(documentId: change.document.documentID, data: data))
+//                        print("Appending message in chat log view")
                     }
                 })
                 
@@ -77,7 +84,7 @@ class ChatLogViewModel: ObservableObject {
     }
     
     func handleSend() {
-        print(chatText)
+//        print(chatText)
         guard let fromId = FirebaseManager.shared.auth.currentUser?.uid else { return }
         
         guard let toId = chatUser?.uid else { return }
@@ -145,6 +152,28 @@ class ChatLogViewModel: ObservableObject {
                 return
             }
         }
+        
+        guard let currentUser = FirebaseManager.shared.currentUser else { return }
+                let recipientRecentMessageDictionary = [
+                    FirebaseConstants.timestamp: Timestamp(),
+                    FirebaseConstants.text: self.chatText,
+                    FirebaseConstants.fromId: uid,
+                    FirebaseConstants.toId: toId,
+                    FirebaseConstants.profileImageUrl: currentUser.profileImageUrl,
+                    FirebaseConstants.email: currentUser.email
+                ] as [String : Any]
+                
+                FirebaseManager.shared.firestore
+                    .collection(FirebaseConstants.recentMessages)
+                    .document(toId)
+                    .collection(FirebaseConstants.messages)
+                    .document(currentUser.uid)
+                    .setData(recipientRecentMessageDictionary) { error in
+                        if let error = error {
+                            print("Failed to save recipient recent message: \(error)")
+                            return
+                        }
+                    }
     }
     
     @Published var count = 0
@@ -171,6 +200,9 @@ struct ChatLogView: View {
         }
         .navigationTitle(chatUser?.email ?? "")
         .navigationBarTitleDisplayMode(.inline)
+        .onDisappear {
+            vm.firestoreListener?.remove()
+        }
         }
     
     static let emptyScrollToString = "Empty"

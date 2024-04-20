@@ -19,10 +19,6 @@ struct MainView: View {
                 .tabItem {
                     Label("Map", systemImage: "map")
                 }
-            NavigateView()
-                .tabItem {
-                    Label("Navigation", systemImage: "location")
-                }
 //            AccountView()
 //                .tabItem {
 //                    Label("Profile", systemImage: "person")

@@ -8,16 +8,18 @@
 import SwiftUI
 import SDWebImageSwiftUI
 import Firebase
+import FirebaseFirestoreSwift
 
-struct RecentMessage: Identifiable {
+struct RecentMessage: Codable, Identifiable {
     
-    var id: String{ documentId }
+//    var id: String{ documentId }
+    @DocumentID var id: String?
     
-    let documentId: String
+//    let documentId: String
     let text, email: String
     let fromId, toId: String
     let profileImageUrl: String
-    let timestamp: Date
+    let timestamp: Timestamp
     
     var username: String {
         email.components(separatedBy: "@").first ?? email
@@ -26,22 +28,22 @@ struct RecentMessage: Identifiable {
     var timeAgo: String {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: timestamp, relativeTo: Date())
+        return formatter.localizedString(for: timestamp.dateValue(), relativeTo: Date())
     }
     
     init(documentId: String, data: [String: Any]) {
-        self.documentId = documentId
+//        self.documentId = documentId
         self.text = data["text"] as? String ?? ""
         self.email = data["email"] as? String ?? ""
         self.fromId = data["fromId"] as? String ?? ""
         self.toId = data["toId"] as? String ?? ""
         self.profileImageUrl = data["profileImageUrl"] as? String ?? ""
-        if let timestamp = data["timestamp"] as? Timestamp {
-                self.timestamp = timestamp.dateValue()
-            } else {
-                self.timestamp = Date()
-            }
-        
+//        if let timestamp = data["timestamp"] as? Timestamp {
+//                self.timestamp = timestamp.dateValue()
+//            } else {
+//                self.timestamp = Date()
+//            }
+        self.timestamp = data["timestamp"] as? Timestamp ?? Timestamp(date: Date())
     }
 }
 
@@ -62,10 +64,15 @@ class MainMessagesViewModel: ObservableObject {
     
     @Published var recentMessages = [RecentMessage]()
     
-    private func fetchRecentMessage() {
+    private var firestoreListener: ListenerRegistration?
+    
+    func fetchRecentMessage() {
         guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
         
-        FirebaseManager.shared.firestore
+        firestoreListener?.remove()
+        self.recentMessages.removeAll()
+                
+        firestoreListener = FirebaseManager.shared.firestore
             .collection("recent_messages")
             .document(uid)
             .collection("messages")
@@ -80,13 +87,26 @@ class MainMessagesViewModel: ObservableObject {
                     let docId = change.document.documentID
                     
                     if let index = self.recentMessages.firstIndex(where: { rm in
-                        return rm.documentId == docId
+                        return rm.id == docId
                     }) {
                         self.recentMessages.remove(at: index)
                     }
                     
-                    self.recentMessages.insert(.init(documentId: docId, data: change.document.data()), at: 0)
+                    do {
+                        let rm = try change.document.data(as: RecentMessage.self)
+                        self.recentMessages.insert(rm, at: 0)
+                        
+                    } catch {
+                        print(error)
+                    }
                     
+//                    if let rm = try? change.document.data(as: RecentMessage.self) {
+//                        self.recentMessages.insert(rm, at: 0)
+//                    }
+                    
+//                    self.recentMessages.insert(.init(documentId: docId, data: change.document.data()), at: 0)
+                    
+//                    print("Fetch message successfully")
 //                    self.recentMessages.append()
                 })
             }
@@ -135,6 +155,8 @@ struct MainMessagesView: View {
     
     @ObservedObject private var vm = MainMessagesViewModel()
     
+    private var chatLogViewModel = ChatLogViewModel(chatUser: nil)
+    
     private var customNavBar: some View {
         HStack(spacing: 16) {
             
@@ -177,7 +199,7 @@ struct MainMessagesView: View {
         .actionSheet(isPresented: $shouldShowLogOutOptions) {
             .init(title: Text("Setting"), message: Text("What do you want to do?"), buttons: [
                 .destructive(Text("Sign Out"), action: {
-                    print("handle sign out")
+//                    print("handle sign out")
                     vm.handleSignOut()
                 }),
                 .cancel()
@@ -187,6 +209,7 @@ struct MainMessagesView: View {
             AccountView(didCompleteLoginProcess: {
                 self.vm.isUserCurrentlyLoggedOut = false
                 self.vm.fetchCurrentUser()
+                self.vm.fetchRecentMessage()
             })
         })
     }
@@ -213,8 +236,12 @@ struct MainMessagesView: View {
         ScrollView {
             ForEach(vm.recentMessages) {recentMessage in
                 VStack {
-                    NavigationLink {
-                        Text("Destination")
+                    Button {
+                        let uid = FirebaseManager.shared.auth.currentUser?.uid == recentMessage.fromId ? recentMessage.toId : recentMessage.fromId
+                        self.chatUser = .init(data: [FirebaseConstants.email: recentMessage.email, FirebaseConstants.profileImageUrl: recentMessage.profileImageUrl, FirebaseConstants.uid: uid])
+                        self.chatLogViewModel.chatUser = self.chatUser
+                        self.chatLogViewModel.fetchMessages()
+                        self.shouldNavigateToChatLogView.toggle()
                     } label: {
                         HStack(spacing: 16){
                             WebImage(url: URL(string: recentMessage.profileImageUrl))
@@ -241,6 +268,7 @@ struct MainMessagesView: View {
                             
                             Text(recentMessage.timeAgo)
                                 .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Color(.label))
                         }
                     }
                     
@@ -275,9 +303,11 @@ struct MainMessagesView: View {
         .fullScreenCover(isPresented: $shouldShowNewMessageScreen) {
             NewMessageView(didSelectNewUser: {
                 user in 
-                print(user.email)
+//                print(user.email)
                 self.shouldNavigateToChatLogView.toggle()
                 self.chatUser = user
+                self.chatLogViewModel.chatUser = user
+                self.chatLogViewModel.fetchMessages()
             })
         }
     }
