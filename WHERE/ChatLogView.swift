@@ -129,51 +129,113 @@ class ChatLogViewModel: ObservableObject {
         
         guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
         guard let toId = self.chatUser?.uid else { return }
-        
-        let document = FirebaseManager.shared.firestore
-            .collection("recent_messages")
-            .document(uid)
-            .collection("messages")
-            .document(toId)
-        
-        let data = [
-            FirebaseConstants.timestamp: Timestamp(),
-            FirebaseConstants.text: self.chatText,
-            FirebaseConstants.fromId: uid,
-            FirebaseConstants.toId: toId,
-            FirebaseConstants.profileImageUrl: chatUser?.profileImageUrl ?? "",
-            FirebaseConstants.email: chatUser!.email
-        ] as [String : Any]
-        
-        document.setData(data) { error in
+        var chat = self.chatText
+                
+        let senderDocument = FirebaseManager.shared.firestore
+                .collection("recent_messages")
+                .document(uid)
+                .collection("messages")
+                .document(toId)
+
+        let recipientDocument = FirebaseManager.shared.firestore
+                .collection("recent_messages")
+                .document(toId)
+                .collection("messages")
+                .document(uid)
+
+        let timestamp = Timestamp()
+                
+        let senderData = [
+                FirebaseConstants.timestamp: timestamp,
+                FirebaseConstants.text: self.chatText,
+                FirebaseConstants.fromId: uid,
+                FirebaseConstants.toId: toId,
+                FirebaseConstants.profileImageUrl: chatUser?.profileImageUrl ?? "",
+                FirebaseConstants.email: chatUser!.email
+            ] as [String : Any]
+
+        let db = Firestore.firestore()
+        db.collection("users").document(uid).getDocument { (document, error) in
             if let error = error {
-                self.errorMessage = "Failed to save recent message: \(error)"
-                print(error)
+                print("Error getting user document: \(error)")
                 return
+            }
+            
+            guard let userData = document?.data() else {
+                print("User document not found")
+                return
+            }
+            let image = userData[FirebaseConstants.profileImageUrl] as? String ?? ""
+            
+            let recipientData = [
+                FirebaseConstants.timestamp: timestamp,
+                FirebaseConstants.text: chat,
+                FirebaseConstants.fromId: uid,
+                FirebaseConstants.toId: toId,
+                FirebaseConstants.profileImageUrl: image,
+                FirebaseConstants.email: FirebaseManager.shared.auth.currentUser?.email ?? ""
+            ] as [String : Any]
+            
+            senderDocument.setData(senderData) { error in
+                if let error = error {
+                    self.errorMessage = "Failed to save recent message: \(error)"
+                    print(error)
+                    return
+                }
+            }
+            
+            recipientDocument.setData(recipientData) { error in
+                if let error = error {
+                    print("Failed to save recipient recent message: \(error)")
+                    return
+                }
             }
         }
         
-        guard let currentUser = FirebaseManager.shared.currentUser else { return }
-                let recipientRecentMessageDictionary = [
-                    FirebaseConstants.timestamp: Timestamp(),
-                    FirebaseConstants.text: self.chatText,
-                    FirebaseConstants.fromId: uid,
-                    FirebaseConstants.toId: toId,
-                    FirebaseConstants.profileImageUrl: currentUser.profileImageUrl,
-                    FirebaseConstants.email: currentUser.email
-                ] as [String : Any]
-                
-                FirebaseManager.shared.firestore
-                    .collection(FirebaseConstants.recentMessages)
-                    .document(toId)
-                    .collection(FirebaseConstants.messages)
-                    .document(currentUser.uid)
-                    .setData(recipientRecentMessageDictionary) { error in
-                        if let error = error {
-                            print("Failed to save recipient recent message: \(error)")
-                            return
-                        }
-                    }
+//        let document = FirebaseManager.shared.firestore
+//            .collection("recent_messages")
+//            .document(uid)
+//            .collection("messages")
+//            .document(toId)
+//                
+//        let data = [
+//            FirebaseConstants.timestamp: Timestamp(),
+//            FirebaseConstants.text: self.chatText,
+//            FirebaseConstants.fromId: uid,
+//            FirebaseConstants.toId: toId,
+//            FirebaseConstants.profileImageUrl: chatUser?.profileImageUrl ?? "",
+//            FirebaseConstants.email: chatUser!.email
+//        ] as [String : Any]
+//        
+//        document.setData(data) { error in
+//            if let error = error {
+//                self.errorMessage = "Failed to save recent message: \(error)"
+//                print(error)
+//                return
+//            }
+//        }
+//        
+//        guard let currentUser = FirebaseManager.shared.currentUser else { return }
+//                let recipientRecentMessageDictionary = [
+//                    FirebaseConstants.timestamp: Timestamp(),
+//                    FirebaseConstants.text: self.chatText,
+//                    FirebaseConstants.fromId: uid,
+//                    FirebaseConstants.toId: toId,
+//                    FirebaseConstants.profileImageUrl: currentUser.profileImageUrl,
+//                    FirebaseConstants.email: currentUser.email
+//                ] as [String : Any]
+//                
+//                FirebaseManager.shared.firestore
+//                    .collection(FirebaseConstants.recentMessages)
+//                    .document(toId)
+//                    .collection(FirebaseConstants.messages)
+//                    .document(currentUser.uid)
+//                    .setData(recipientRecentMessageDictionary) { error in
+//                        if let error = error {
+//                            print("Failed to save recipient recent message: \(error)")
+//                            return
+//                        }
+//                    }
     }
     
     @Published var count = 0
