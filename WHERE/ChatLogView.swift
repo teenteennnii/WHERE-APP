@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Firebase
+import CoreLocation
 
 struct FirebaseConstants {
     static let uid = "uid"
@@ -191,59 +192,66 @@ class ChatLogViewModel: ObservableObject {
                 }
             }
         }
-        
-//        let document = FirebaseManager.shared.firestore
-//            .collection("recent_messages")
-//            .document(uid)
-//            .collection("messages")
-//            .document(toId)
-//                
-//        let data = [
-//            FirebaseConstants.timestamp: Timestamp(),
-//            FirebaseConstants.text: self.chatText,
-//            FirebaseConstants.fromId: uid,
-//            FirebaseConstants.toId: toId,
-//            FirebaseConstants.profileImageUrl: chatUser?.profileImageUrl ?? "",
-//            FirebaseConstants.email: chatUser!.email
-//        ] as [String : Any]
-//        
-//        document.setData(data) { error in
-//            if let error = error {
-//                self.errorMessage = "Failed to save recent message: \(error)"
-//                print(error)
-//                return
-//            }
-//        }
-//        
-//        guard let currentUser = FirebaseManager.shared.currentUser else { return }
-//                let recipientRecentMessageDictionary = [
-//                    FirebaseConstants.timestamp: Timestamp(),
-//                    FirebaseConstants.text: self.chatText,
-//                    FirebaseConstants.fromId: uid,
-//                    FirebaseConstants.toId: toId,
-//                    FirebaseConstants.profileImageUrl: currentUser.profileImageUrl,
-//                    FirebaseConstants.email: currentUser.email
-//                ] as [String : Any]
-//                
-//                FirebaseManager.shared.firestore
-//                    .collection(FirebaseConstants.recentMessages)
-//                    .document(toId)
-//                    .collection(FirebaseConstants.messages)
-//                    .document(currentUser.uid)
-//                    .setData(recipientRecentMessageDictionary) { error in
-//                        if let error = error {
-//                            print("Failed to save recipient recent message: \(error)")
-//                            return
-//                        }
-//                    }
     }
     
     @Published var count = 0
+    
+    private var locationManagerDelegate = LocationManagerDelegate()
+    
+    func sendLocation() {
+        guard let location = locationManagerDelegate.location else {
+            errorMessage = "Location not available"
+            return
+        }
+
+        guard let fromId = FirebaseManager.shared.auth.currentUser?.uid else { return }
+        guard let toId = chatUser?.uid else { return }
+
+        let document = FirebaseManager.shared.firestore
+            .collection("recent_location")
+            .document(fromId)
+            .collection("location")
+            .document(toId)
+
+        let locationData = [
+            FirebaseConstants.fromId: fromId,
+            FirebaseConstants.toId: toId,
+            "latitude": location.coordinate.latitude,
+            "longitude": location.coordinate.longitude,
+            FirebaseConstants.timestamp: Timestamp()
+        ] as [String : Any]
+
+        document.setData(locationData) { error in
+            if let error = error {
+                self.errorMessage = "Failed to save location in Firestore: \(error)"
+            }
+            print("Successfully saved location")
+        }
+    }
+
+}
+
+class LocationManagerDelegate: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private let locationManager = CLLocationManager()
+    @Published var location: CLLocation?
+    
+    override init() {
+            super.init()
+            locationManager.delegate = self
+            locationManager.requestWhenInUseAuthorization()
+            locationManager.startUpdatingLocation()
+        }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+            location = locations.last
+        }
 }
 
 struct ChatLogView: View {
         
     let chatUser: ChatUser?
+    
+    @State private var showingMap = false
     
     init(chatUser: ChatUser?) {
         self.chatUser = chatUser
@@ -264,6 +272,15 @@ struct ChatLogView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onDisappear {
             vm.firestoreListener?.remove()
+        }
+        .fullScreenCover(isPresented: $showingMap) {
+            NavigationView {
+                MapView(fromId: FirebaseManager.shared.auth.currentUser?.uid ?? "", toId: vm.chatUser?.uid ?? "")
+                    .edgesIgnoringSafeArea(.vertical)
+                    .navigationBarItems(trailing: Button("Close") {
+                    showingMap = false
+                })
+            }
         }
         }
     
@@ -291,11 +308,27 @@ struct ChatLogView: View {
         .background(Color(.secondarySystemBackground))
     }
     
+    @State private var showAlert = false
+
     private var chatBottomBar: some View {
+        
         HStack(spacing: 16) {
-            Image(systemName: "photo.on.rectangle")
-                .font(.system(size: 24))
-                .foregroundColor(Color(.darkGray))
+            Button(action: {
+                        vm.sendLocation()
+                        showAlert = true
+                    }) {
+                        Image(systemName: "paperplane.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color(.darkGray))
+                    }
+            
+            Button(action: {
+                        showingMap = true
+                    }) {
+                        Image(systemName: "map")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color(.darkGray))
+                    }
             
             ZStack {
                 DescriptionPlaceholder()
@@ -317,6 +350,9 @@ struct ChatLogView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
+        .alert(isPresented: $showAlert) {
+                Alert(title: Text("Location Sent"), message: Text("Your location has been sent!"), dismissButton: .default(Text("OK")))
+            }
     }
 }
 

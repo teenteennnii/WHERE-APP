@@ -10,20 +10,21 @@ import SwiftUI
 struct MainView: View {
     @ObservedObject private var vm = MainMessagesViewModel()
     var body: some View {
-        TabView{
-            MainMessagesView()
-                .tabItem {
-                    Label("Messages", systemImage: "person.2")
-                }
-            MapView()
-                .tabItem {
-                    Label("Map", systemImage: "map")
-                }
-//            AccountView()
+        MainMessagesView()
+//        TabView{
+//            MainMessagesView()
 //                .tabItem {
-//                    Label("Profile", systemImage: "person")
+//                    Label("Messages", systemImage: "person.2")
 //                }
-        }
+//            MapView()
+//                .tabItem {
+//                    Label("Map", systemImage: "map")
+//                }
+////            AccountView()
+////                .tabItem {
+////                    Label("Profile", systemImage: "person")
+////                }
+//        }
     }
 }
 

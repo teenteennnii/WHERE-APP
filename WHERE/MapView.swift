@@ -7,58 +7,28 @@
 
 import SwiftUI
 import MapKit
-
-//struct MapView: View {
-//    @State private var userLocation: CLLocationCoordinate2D?
-//    @State private var cameraPosition: MapCameraPosition = .region(.userRegion)
-//    
-//    var body: some View {
-//        Map(position: $cameraPosition) {
-////            Marker("My Location", /*systemImage: "person",*/ coordinate: .userLocation).tint(.red)
-//                        
-//            Annotation("My Location", coordinate: .userLocation) {
-//                ZStack {
-//                    Circle()
-//                        .frame(width: 32, height: 32)
-//                        .foregroundStyle(.blue.opacity(0.25))
-//                    Circle()
-//                        .frame(width: 20, height: 20)
-//                        .foregroundStyle(.white)
-//                    Circle()
-//                        .frame(width: 12, height: 12)
-//                        .foregroundStyle(.blue)
-//                }
-//            }
-//        }
-//        .mapControls {
-//            MapCompass()
-//            MapPitchToggle()
-//            MapUserLocationButton()
-//        }
-//    }
-//}
-//
-//extension CLLocationCoordinate2D {
-//    static var userLocation: CLLocationCoordinate2D {
-//        return .init(latitude: 13.736717, longitude: 100.523186)
-//    }
-//}
-//
-//extension MKCoordinateRegion {
-//    static var userRegion: MKCoordinateRegion {
-//        return .init(center: .userLocation, latitudinalMeters: 1000, longitudinalMeters: 1000)
-//    }
-//}
+import Firebase
 
 struct MapView: View {
-    
+
     @StateObject private var viewModel = MapViewModel()
+    let fromId: String
+    let toId: String
+    @State private var isLocationNotFoundAlertPresented = false
+        
+    init(fromId: String, toId: String) {
+        self.fromId = fromId
+        self.toId = toId
+    }
     
     var body: some View {
-        Map(coordinateRegion: $viewModel.region, showsUserLocation: true)
-            .onAppear() {
-                viewModel.checkIfLocationServiceIsEnabled()
-            }
+        Map(coordinateRegion: $viewModel.region, showsUserLocation: true, annotationItems: viewModel.annotations) { annotation in
+                    MapPin(coordinate: annotation.coordinate, tint: .red)
+                }
+                .onAppear() {
+                    viewModel.checkIfLocationServiceIsEnabled(fromId: fromId, toId: toId)
+                }
+
     }
     
 }
@@ -66,16 +36,52 @@ struct MapView: View {
 final class MapViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     @Published var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 13.745394, longitude: 100.534455), span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
+    @Published var annotations: [Annotation] = []
     
     var locationManager: CLLocationManager?
+    var firestoreListener: ListenerRegistration?
     
-    func checkIfLocationServiceIsEnabled() {
+    func checkIfLocationServiceIsEnabled(fromId: String, toId: String) {
         if CLLocationManager.locationServicesEnabled() {
             locationManager = CLLocationManager()
             locationManager!.delegate = self
         } else {
             print("Please turn on location")
         }
+        
+        fetchRecentLocation(fromId: fromId, toId: toId)
+    }
+    
+    private func fetchRecentLocation(fromId: String, toId: String) {
+        FirebaseManager.shared.firestore
+                .collection("recent_location")
+                .document(toId)
+                .collection("location")
+                .document(fromId)
+                .getDocument { document, error in
+                    if let error = error {
+                        print("Error fetching recent location document: \(error.localizedDescription)")
+                        return
+                    }
+                    
+                    guard let document = document, document.exists else {
+                        print("Recent location document not found")
+                        return
+                    }
+                    
+                    guard let locationData = document.data(),
+                          let latitude = locationData["latitude"] as? CLLocationDegrees,
+                          let longitude = locationData["longitude"] as? CLLocationDegrees else {
+                        print("Error parsing recent location data")
+
+                        return
+                    }
+                    
+                    let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                    self.region = MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
+                    let annotation = Annotation(coordinate: coordinate)
+                    self.annotations = [annotation]
+                }
     }
     
     private func checkLocationAuthorization() {
@@ -103,7 +109,11 @@ final class MapViewModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     }
 }
 
+struct Annotation: Identifiable {
+    let id = UUID()
+    var coordinate: CLLocationCoordinate2D
+}
 
 #Preview {
-    MapView()
+    MainView()
 }
