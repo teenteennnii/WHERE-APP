@@ -14,7 +14,7 @@ To use WHERE on your iOS device, follow these steps:
 
 1. <b>Clone the Repository:</b>
     ```
-    git clone https://github.com/yourusername/FriendChat.git
+    https://github.com/teenteennnii/WHERE-APP.git
     ```
 2. <b>Open in Xcode:</b> Open the project folder in Xcode.
 
